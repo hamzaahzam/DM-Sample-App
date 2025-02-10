@@ -1,103 +1,41 @@
 package com.dailymotion.sample.player.sdk.basic
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.FrameLayout.LayoutParams
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import com.dailymotion.player.android.sdk.Dailymotion
-import com.dailymotion.player.android.sdk.PlayerParameters
-import com.dailymotion.player.android.sdk.PlayerView
-import com.dailymotion.player.android.sdk.listeners.PlayerListener
-import com.dailymotion.player.android.sdk.webview.error.PlayerError
-import com.dailymotion.sample.player.sdk.MainActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dailymotion.sample.player.sdk.R
+import com.dailymotion.sample.player.sdk.VideoAdapter
 
 class BasicEmbedFragment : Fragment() {
 
-    companion object {
-        private const val TAG = "BasicEmbed"
-    }
 
-    private var videoContainer: FrameLayout? = null
-    private var playerView: PlayerView? = null
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_basic_embed, container, false)
+        return inflater.inflate(R.layout.fragment_video_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initializeToolbar()
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
-        videoContainer = view.findViewById(R.id.videoContainer)
-
-        Log.d(TAG, "Creating dailymotion player")
-        Dailymotion.createPlayer(context = view.context,
-            playerId = "xix5w",
-            videoId = "x8nlohg",
-            playerParameters = PlayerParameters(
-                mute = true
-            ),
-            playerSetupListener = object : Dailymotion.PlayerSetupListener {
-                override fun onPlayerSetupSuccess(player: PlayerView) {
-                    Log.d(TAG, "Successfully created dailymotion player")
-                    videoContainer?.addView(
-                        player, LayoutParams(
-                            LayoutParams.MATCH_PARENT,
-                            LayoutParams.MATCH_PARENT,
-                        )
-                    )
-
-                    playerView = player
-                }
-
-                override fun onPlayerSetupFailed(error: PlayerError) {
-                    Log.d(TAG, "Error while creating dailymotion player: ${error.message}")
-                }
-            },
-            playerListener = object : PlayerListener {
-                override fun onFullscreenRequested(playerDialogFragment: DialogFragment) {
-                    super.onFullscreenRequested(playerDialogFragment)
-                    Log.d(TAG, "Entering fullscreen")
-
-                    playerDialogFragment.show(
-                        this@BasicEmbedFragment.parentFragmentManager,
-                        "dmPlayerFullscreenFragment"
-                    )
-                }
-
-                override fun onFullscreenExit(playerView: PlayerView) {
-                    super.onFullscreenExit(playerView)
-                    Log.d(TAG, "Exiting fullscreen")
-                }
-            }
+        val videoList = listOf(
+            VideoItem("x8nlohg"),
+            VideoItem("x8nlop2"),
+            VideoItem("x8nlohg"),
+            VideoItem("x8nlop2")
         )
-    }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        destroyPlayer()
-    }
-
-    private fun initializeToolbar() {
-        (activity as? MainActivity?)?.let { a ->
-            a.setTitle(R.string.basic_embed_title)
-            a.showToolbarBackButton(showBackButton = true)
-        }
-    }
-
-    private fun destroyPlayer() {
-        playerView?.destroy()
-        playerView = null
+        recyclerView.adapter = VideoAdapter(videoList)
     }
 }
